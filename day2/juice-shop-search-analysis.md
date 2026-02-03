@@ -1,144 +1,53 @@
 
-You can paste this as-is (it reflects exactly what you learned with me).
+# Day 02 – Juice Shop Search Endpoint Analysis
 
-# Day 02 – Juice Shop Code Research Methodology
+## File Analyzed
 
-## Objective
-To learn how to read a real-world Express + TypeScript codebase from an AppSec perspective and identify:
-- User input sources
-- Authorization gates
-- Output sinks
-- Security-relevant logic
 
-This document focuses on **how to analyze**, not on a single vulnerability.
+routes/search.ts
+
 
 ---
 
-## Step 1: Identify Routing File
+## Code Snippet (Relevant)
 
-Juice Shop uses `server.ts` as the main routing and middleware wiring file.
-
-Important observation:
-- `server.ts` rarely contains final response logic
-- It maps endpoints to handler functions defined elsewhere
-
-Example:
 ```ts
-app.get('/rest/products/search', searchProducts())
+models.sequelize.query(
+  `SELECT * FROM Products 
+   WHERE ((name LIKE '%${criteria}%' 
+   OR description LIKE '%${criteria}%') 
+   AND deletedAt IS NULL)`
+)
 
+Primary Vulnerability
+SQL Injection
 
-This means:
-➡ The actual logic is in routes/search.ts
+User input is concatenated into SQL query
 
-Step 2: Follow the Import
+No prepared statements or parameterization
 
-To find where responses are generated:
+Attacker can manipulate query logic
 
-Identify the handler function name
+Secondary Risk
+Stored / Reflected XSS (Frontend Dependent)
 
-Follow the import statement
+Product name and description originate from user input
 
-Open the corresponding file inside routes/
+If frontend renders using innerHTML, XSS can occur
 
-Example:
+Backend JSON response alone is not dangerous
 
-import { searchProducts } from './routes/search'
+Responsibility Split
+Backend
 
+Input validation
 
-➡ Open routes/search.ts
+Authentication & authorization
 
-Step 3: Identify User Input Sources
+Safe database queries
 
-In route handler files, search for:
+Frontend
 
-req.body
-req.query
-req.params
-req.headers
+Context-aware output encoding
 
-
-Rule:
-
-Every accessed property of these objects is attacker-controlled input.
-
-Example:
-
-req.query.q
-req.body.email
-req.params.id
-
-Step 4: Identify Middleware vs Business Logic
-
-Important distinction:
-
-Code that modifies req and calls next() is middleware
-
-Code that sends res.send / res.json / res.render is output logic
-
-Middleware example:
-
-app.post('/api/Users', (req, res, next) => {
-  req.body.email = req.body.email.trim()
-  next()
-})
-
-
-This does NOT produce a response.
-
-Step 5: Locate Output Sinks
-
-Search for:
-
-res.send
-res.json
-res.render
-res.redirect
-
-
-These are security-critical sinks.
-
-If not found immediately:
-
-Scroll to the end of async functions
-
-Look after Promise chains
-
-Step 6: Determine Output Context
-
-Ask:
-
-Is output JSON?
-
-Is output HTML?
-
-Is output rendered in frontend JS?
-
-Key insight:
-
-JSON responses are not executable by themselves
-
-XSS risk depends on frontend rendering (e.g. innerHTML)
-
-Step 7: Separate Primary vs Secondary Vulnerabilities
-
-Example from search endpoint:
-
-Primary: SQL Injection (backend)
-
-Secondary: Stored XSS (frontend-dependent)
-
-Lesson:
-
-Not every vulnerability is visible in one file.
-
-Step 8: Security Controls to Watch For
-
-While reading Juice Shop code, always look for:
-
-security.isAuthorized() → authentication & authorization
-
-security.appendUserId() → identity attachment (not auth)
-
-Input normalization (trim, length checks)
-
-Missing ownership checks (IDOR/BOLA risk)
+Avoiding unsafe DOM APIs
