@@ -1,0 +1,32 @@
+# Day 12 — First SAST Scan with Semgrep
+
+## Lab Setup
+- docker --version                  
+Docker version 28.5.2+dfsg3, build 9cc6dea35e9a963f281434761c656fba4ac43aed
+the container information 
+- WebGoat running at: localhost:8080
+- Target app scanned: Vulnerable-Flask-App (OWASP)
+- docker ps to know 
+## Scan Command
+semgrep --config=p/owasp-top-ten .
+Rules run: 244 | Files scanned: 18 | Findings: 7
+1.159.0
+
+## Most Critical Finding
+**SQL Injection — python.flask.security.injection.tainted-sql-string**
+- File: [which file was it in?]
+- Line 261
+- Vulnerable code: [paste the line]
+- Why dangerous: [your words]
+- Fix: parameterized queries — separate data from query structure
+
+## Other Findings
+[list the other 6 briefly — one line each]
+
+## What I learned today
+[3-4 sentences, your own words]
+
+## What confused me
+[be honest]
+
+

@@ -1,0 +1,19 @@
+# Day 12 — Lab Setup
+
+## What I did
+- Ran `docker pull webgoat/webgoat` — result: pulled the image and downloaded it 
+- Ran `docker run` command — result: docker run -d -p 8080:8080 -p 9090:9090 --name webgoat webgoat/webgoat
+db71576ee3d6ec18b50e0cc9b1c60cc52b5eca55dbfbb3d33f380458d7845bd4
+
+- Ran `docker ps` — result: gives the results of image name and container and all 
+- Opened browser at localhost:8080/WebGoat — result: yes 
+
+## What confused me
+i was not aware with the restarting command because i was not able to download the image 
+sudo usermod -aG docker $USER
+this is to add a new user it seems to the docker
+
+## One thing I learned today
+to add a user in the docker it seems to the group 
+
+
